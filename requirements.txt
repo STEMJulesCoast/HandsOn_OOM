@@ -1,7 +1,10 @@
 pillow
+numpy
+pydap
+netcdf4
+h5netcdf
 xarray
 scipy
 matplotlib
 cartopy
-netcdf4
-pydap
+requests
