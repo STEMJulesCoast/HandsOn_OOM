@@ -1,0 +1,7 @@
+pillow
+xarray
+scipy
+matplotlib
+cartopy
+netcdf4
+pydap
