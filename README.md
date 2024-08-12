@@ -34,7 +34,7 @@ Um direkt in einem interaktiven Umfeld zu experimentieren, kann das Repository i
 
 ## Beispiel- und Übungsskript Social Media Account  
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/STEMJulesCoast/HandsOn_OOM/main?labpath=example_exercise_OOP_Streaming.ipynb)
+Momentan nicht via Binder verfügbar. 
 
 ## Beispiel- und Übungsskript Klimadaten-Prozessierung 
 
