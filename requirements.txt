@@ -8,3 +8,6 @@ scipy
 matplotlib
 cartopy
 requests
+opencv-python
+pygame
+pydub
