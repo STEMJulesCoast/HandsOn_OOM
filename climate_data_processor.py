@@ -5,18 +5,34 @@ import numpy as np
 
 class ClimateDataProcessor:
     def __init__(self, dataset):
-        self.dataset = dataset
-        self.ds_anom_detrended = xr.Dataset()
+        self._dataset = dataset
+        self._ds_anom_detrended = xr.Dataset()
+
+    # Property for accessing the dataset
+    @property
+    def dataset(self):
+        return self._dataset
+
+    @dataset.setter
+    def dataset(self, value):
+        if not isinstance(value, xr.Dataset):
+            raise ValueError("Dataset must be an instance of xarray.Dataset.")
+        self._dataset = value
+
+    # Property for accessing the detrended dataset
+    @property
+    def ds_anom_detrended(self):
+        return self._ds_anom_detrended
 
     def compute_anomalies_and_detrend(self):
-        for var in self.dataset.data_vars:
+        for var in self._dataset.data_vars:
             # Check if variable has 'lat', 'lon', and 'time' dimensions
-            if set(['lat', 'lon', 'time']).issubset(set(self.dataset[var].dims)):
+            if set(['lat', 'lon', 'time']).issubset(set(self._dataset[var].dims)):
                 # Calculate the monthly climatology for each variable
-                climatology = self.dataset[var].groupby('time.month').mean('time')
+                climatology = self._dataset[var].groupby('time.month').mean('time')
 
                 # Calculate anomalies
-                anomalies = self.dataset[var].groupby('time.month') - climatology
+                anomalies = self._dataset[var].groupby('time.month') - climatology
 
                 # Detrend the anomalies
                 detrended_anomalies = xr.apply_ufunc(
@@ -28,21 +44,21 @@ class ClimateDataProcessor:
                 ).where(~anomalies.isnull())  # Re-apply the NaN mask
 
                 # Assign to the dataset and transpose dimensions
-                self.ds_anom_detrended[var] = detrended_anomalies.transpose('time', 'lat', 'lon')
+                self._ds_anom_detrended[var] = detrended_anomalies.transpose('time', 'lat', 'lon')
 
                 # Copy attributes and update long_name
-                self.ds_anom_detrended[var].attrs = self.dataset[var].attrs
-                self.ds_anom_detrended[var].attrs['long_name'] = 'Detrended anomaly of ' + self.ds_anom_detrended[var].attrs['long_name']
+                self._ds_anom_detrended[var].attrs = self._dataset[var].attrs
+                self._ds_anom_detrended[var].attrs['long_name'] = 'Detrended anomaly of ' + self.ds_anom_detrended[var].attrs['long_name']
 
-        self.ds_anom_detrended.attrs['description'] = 'Contains detrended anomalies of all variables'
+        self._ds_anom_detrended.attrs['description'] = 'Contains detrended anomalies of all variables'
 
     def save_results(self, filepath):
-        self.ds_anom_detrended.to_netcdf(filepath)
+        self._ds_anom_detrended.to_netcdf(filepath)
 
     
     def filter_and_analyze_cycle(self, variable, vmin = 0, vmax = 2, window_size = 15, background='white',):
         # Data Preparation
-        clean_data = self.ds_anom_detrended[variable].dropna(dim='time', how='all')
+        clean_data = self._ds_anom_detrended[variable].dropna(dim='time', how='all')
 
         # Low-Pass Filter to remove high frequency variations
         low_pass = clean_data.rolling(time=window_size, center=True).mean()
@@ -93,9 +109,9 @@ class ClimateDataProcessor:
         
         # select time span, if necessary
         if time_start is not None:
-            ds_sliced = self.ds_anom_detrended.sel(time=slice(time_start, time_end))  
+            ds_sliced = self._ds_anom_detrended.sel(time=slice(time_start, time_end))  
         else:
-            ds_sliced = self.ds_anom_detrended    
+            ds_sliced = self._ds_anom_detrended    
             
                                  
         # Adjust longitude boundaries if needed:
